@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MBTI 궁합 테스트 + 감성 이미지</title>
+  <title>MBTI 궁합 테스트 + 감성 이미지 스타일 선택</title>
   <style>
     body { font-family: 'Arial'; padding: 20px; background: #f9f9f9; }
-    .box { background: #fff; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+    .box { background: #fff; padding: 20px; border-radius: 10px; max-width: 620px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
     select, button { width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; }
     .result { margin-top: 20px; background: #e8f0ff; padding: 15px; border-radius: 8px; display: none; }
     #imageBox { margin-top: 20px; text-align: center; }
@@ -14,7 +14,7 @@
 </head>
 <body>
   <div class="box">
-    <h2>MBTI 궁합 테스트 ✨ 감성 이미지 자동 생성</h2>
+    <h2>MBTI 궁합 테스트 ✨ 감성 이미지 스타일 선택</h2>
 
     <label for="mbti1">나의 MBTI</label>
     <select id="mbti1">
@@ -34,6 +34,14 @@
       <option>ISFJ</option><option>ESFJ</option><option>ISTJ</option><option>ESTJ</option>
     </select>
 
+    <label for="style">감성 이미지 스타일</label>
+    <select id="style">
+      <option value="watercolor">수채화 (watercolor)</option>
+      <option value="Ghibli-style">지브리풍 (Ghibli-style)</option>
+      <option value="emotive pastel">감성 파스텔 (emotive pastel)</option>
+      <option value="line-art">라인 아트 (line-art)</option>
+    </select>
+
     <button onclick="showResult()">궁합 보기</button>
 
     <div class="result" id="resultBox">
@@ -48,12 +56,10 @@
     let mbtiData = {};
     let promptData = {};
 
-    // 궁합 점수 + 메시지
     fetch("mbti_compatibility_data.json")
       .then(res => res.json())
       .then(data => mbtiData = data);
 
-    // 감성 이미지 프롬프트
     fetch("mbti_image_prompts.json")
       .then(res => res.json())
       .then(data => promptData = data);
@@ -84,14 +90,16 @@
     function generateImage() {
       const mbti1 = document.getElementById("mbti1").value;
       const mbti2 = document.getElementById("mbti2").value;
+      const style = document.getElementById("style").value;
       const key = mbti1 + "_" + mbti2;
-      const prompt = promptData[key];
+      const promptCore = promptData[key];
 
-      if (!prompt) {
+      if (!promptCore) {
         document.getElementById("imageBox").innerHTML = "<p>프롬프트를 찾을 수 없습니다.</p>";
         return;
       }
 
+      const prompt = promptCore.replace(/^A [^ ]+/, `A ${style}`);
       document.getElementById("imageBox").innerHTML = `
         <p><strong>프롬프트:</strong> ${prompt}</p>
         <img src="https://via.placeholder.com/512x512?text=AI+Image+Coming+Soon" alt="Generated image" style="margin-top: 10px;" />
