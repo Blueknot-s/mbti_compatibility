@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MBTI 궁합 테스트</title>
+  <title>MBTI 궁합 테스트 + 감성 이미지</title>
   <style>
     body { font-family: 'Arial'; padding: 20px; background: #f9f9f9; }
-    .box { background: #fff; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+    .box { background: #fff; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
     select, button { width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; }
     .result { margin-top: 20px; background: #e8f0ff; padding: 15px; border-radius: 8px; display: none; }
+    #imageBox { margin-top: 20px; text-align: center; }
   </style>
 </head>
 <body>
   <div class="box">
-    <h2>MBTI 궁합 테스트</h2>
+    <h2>MBTI 궁합 테스트 ✨ 감성 이미지 자동 생성</h2>
+
     <label for="mbti1">나의 MBTI</label>
     <select id="mbti1">
       <option value="">선택하세요</option>
@@ -37,32 +39,36 @@
     <div class="result" id="resultBox">
       <p><strong>궁합 점수:</strong> <span id="score"></span>점</p>
       <p><strong>감성 문구:</strong> <span id="message"></span></p>
-      <button onclick="resetTest()">다시하기</button>
+      <button onclick="generateImage()">감성 이미지 보기</button>
+      <div id="imageBox"></div>
     </div>
   </div>
 
   <script>
     let mbtiData = {};
+    let promptData = {};
 
+    // 궁합 점수 + 메시지
     fetch("mbti_compatibility_data.json")
-      .then(response => response.json())
-      .then(data => mbtiData = data)
-      .catch(error => {
-        alert("궁합 데이터를 불러오는 데 실패했습니다.");
-        console.error(error);
-      });
+      .then(res => res.json())
+      .then(data => mbtiData = data);
+
+    // 감성 이미지 프롬프트
+    fetch("mbti_image_prompts.json")
+      .then(res => res.json())
+      .then(data => promptData = data);
 
     function showResult() {
       const mbti1 = document.getElementById("mbti1").value;
       const mbti2 = document.getElementById("mbti2").value;
+      const key = mbti1 + "_" + mbti2;
+      const reverseKey = mbti2 + "_" + mbti1;
+      const result = mbtiData[key] || mbtiData[reverseKey];
+
       if (!mbti1 || !mbti2) {
         alert("모든 MBTI를 선택해 주세요!");
         return;
       }
-
-      const key = `${mbti1}_${mbti2}`;
-      const reverseKey = `${mbti2}_${mbti1}`;
-      const result = mbtiData[key] || mbtiData[reverseKey];
 
       if (!result) {
         alert("결과를 찾을 수 없습니다.");
@@ -72,12 +78,24 @@
       document.getElementById("score").textContent = result.score;
       document.getElementById("message").textContent = result.message;
       document.getElementById("resultBox").style.display = "block";
+      document.getElementById("imageBox").innerHTML = "";
     }
 
-    function resetTest() {
-      document.getElementById("mbti1").value = "";
-      document.getElementById("mbti2").value = "";
-      document.getElementById("resultBox").style.display = "none";
+    function generateImage() {
+      const mbti1 = document.getElementById("mbti1").value;
+      const mbti2 = document.getElementById("mbti2").value;
+      const key = mbti1 + "_" + mbti2;
+      const prompt = promptData[key];
+
+      if (!prompt) {
+        document.getElementById("imageBox").innerHTML = "<p>프롬프트를 찾을 수 없습니다.</p>";
+        return;
+      }
+
+      document.getElementById("imageBox").innerHTML = `
+        <p><strong>프롬프트:</strong> ${prompt}</p>
+        <img src="https://via.placeholder.com/512x512?text=AI+Image+Coming+Soon" alt="Generated image" style="margin-top: 10px;" />
+      `;
     }
   </script>
 </body>
