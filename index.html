@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MBTI 궁합 테스트</title>
+  <style>
+    body { font-family: 'Arial'; padding: 20px; background: #f9f9f9; }
+    .box { background: #fff; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+    select, button { width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; }
+    .result { margin-top: 20px; background: #e8f0ff; padding: 15px; border-radius: 8px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>MBTI 궁합 테스트</h2>
+    <label for="mbti1">나의 MBTI</label>
+    <select id="mbti1">
+      <option value="">선택하세요</option>
+      <option>INFP</option><option>ENFP</option><option>INFJ</option><option>ENFJ</option>
+      <option>INTP</option><option>ENTP</option><option>INTJ</option><option>ENTJ</option>
+      <option>ISFP</option><option>ESFP</option><option>ISTP</option><option>ESTP</option>
+      <option>ISFJ</option><option>ESFJ</option><option>ISTJ</option><option>ESTJ</option>
+    </select>
+
+    <label for="mbti2">상대의 MBTI</label>
+    <select id="mbti2">
+      <option value="">선택하세요</option>
+      <option>INFP</option><option>ENFP</option><option>INFJ</option><option>ENFJ</option>
+      <option>INTP</option><option>ENTP</option><option>INTJ</option><option>ENTJ</option>
+      <option>ISFP</option><option>ESFP</option><option>ISTP</option><option>ESTP</option>
+      <option>ISFJ</option><option>ESFJ</option><option>ISTJ</option><option>ESTJ</option>
+    </select>
+
+    <button onclick="showResult()">궁합 보기</button>
+
+    <div class="result" id="resultBox">
+      <p><strong>궁합 점수:</strong> <span id="score"></span>점</p>
+      <p><strong>감성 문구:</strong> <span id="message"></span></p>
+      <button onclick="resetTest()">다시하기</button>
+    </div>
+  </div>
+
+  <script>
+    let mbtiData = {};
+
+    fetch("mbti_compatibility_data.json")
+      .then(response => response.json())
+      .then(data => mbtiData = data)
+      .catch(error => {
+        alert("궁합 데이터를 불러오는 데 실패했습니다.");
+        console.error(error);
+      });
+
+    function showResult() {
+      const mbti1 = document.getElementById("mbti1").value;
+      const mbti2 = document.getElementById("mbti2").value;
+      if (!mbti1 || !mbti2) {
+        alert("모든 MBTI를 선택해 주세요!");
+        return;
+      }
+
+      const key = `${mbti1}_${mbti2}`;
+      const reverseKey = `${mbti2}_${mbti1}`;
+      const result = mbtiData[key] || mbtiData[reverseKey];
+
+      if (!result) {
+        alert("결과를 찾을 수 없습니다.");
+        return;
+      }
+
+      document.getElementById("score").textContent = result.score;
+      document.getElementById("message").textContent = result.message;
+      document.getElementById("resultBox").style.display = "block";
+    }
+
+    function resetTest() {
+      document.getElementById("mbti1").value = "";
+      document.getElementById("mbti2").value = "";
+      document.getElementById("resultBox").style.display = "none";
+    }
+  </script>
+</body>
+</html>
